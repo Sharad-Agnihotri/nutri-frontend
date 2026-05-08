@@ -49,35 +49,40 @@ export default function ScanPage() {
     setProduct(null);
     setInsight(null);
     
-    const productData = await getProductByBarcode(barcode, preferences);
-    if (productData) {
-      setProduct(productData);
-      const healthInsight = await generateHealthInsight(productData, preferences);
-      setInsight(healthInsight);
-      
-      // Save to history
-      addToHistory({
-        barcode,
-        name: productData.name,
-        brand: productData.brand,
-        timestamp: Date.now(),
-        isSafe: healthInsight.isSafe
-      });
+    try {
+      const productData = await getProductByBarcode(barcode, preferences);
+      if (productData) {
+        setProduct(productData);
+        const healthInsight = await generateHealthInsight(productData, preferences);
+        setInsight(healthInsight);
+        
+        // Save to history
+        addToHistory({
+          barcode,
+          name: productData.name,
+          brand: productData.brand,
+          timestamp: Date.now(),
+          isSafe: healthInsight.isSafe
+        });
 
-      // PUSH TO PUBLIC FEED (REAL-TIME)
-      if (preferences?.conditions?.length) {
-        try {
-          await addDoc(collection(db, 'public_scans'), {
-            product: productData.name,
-            condition: preferences.conditions[0],
-            timestamp: serverTimestamp()
-          });
-        } catch (e) {
-          console.error("Firebase push failed", e);
+        // PUSH TO PUBLIC FEED (REAL-TIME)
+        if (preferences?.conditions?.length) {
+          try {
+            await addDoc(collection(db, 'public_scans'), {
+              product: productData.name,
+              condition: preferences.conditions[0],
+              timestamp: serverTimestamp()
+            });
+          } catch (e) {
+            console.error("Firebase push failed", e);
+          }
         }
+      } else {
+        setError('Product not found in database. Try another barcode.');
       }
-    } else {
-      setError('Product not found. Please try another barcode.');
+    } catch (err: any) {
+      console.error('Scan API Error:', err);
+      setError(`Connection failed: ${err.message || 'Unknown error'}. Check your Railway/Vercel settings.`);
     }
     setLoading(false);
   };
@@ -95,69 +100,37 @@ export default function ScanPage() {
       </header>
 
       {!product && !loading && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {/* Manual Entry */}
-          <div className="card glass" style={{ padding: '1rem' }}>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <input 
-                type="text" 
-                placeholder="Enter barcode manually..." 
-                id="manual-barcode"
-                className="glass"
-                style={{ 
-                  flex: 1, 
-                  background: 'var(--secondary)', 
-                  border: '1px solid var(--border)', 
-                  borderRadius: '0.75rem', 
-                  padding: '0.75rem 1rem',
-                  color: 'var(--foreground)'
-                }}
-              />
-              <button 
-                className="btn btn-primary" 
-                style={{ width: 'auto', padding: '0 1.25rem' }}
-                onClick={() => {
-                  const val = (document.getElementById('manual-barcode') as HTMLInputElement).value;
-                  if (val) handleScan(val);
-                }}
-              >
-                <Search size={18} />
-              </button>
-            </div>
-          </div>
-
-          <motion.div 
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="card glass"
-            style={{ 
-              textAlign: 'center', 
-              padding: '3rem 1.5rem', 
-              background: 'linear-gradient(135deg, var(--primary) 0%, #064e3b 100%)',
-              color: 'white',
-              border: 'none',
-              boxShadow: '0 20px 40px rgba(15, 118, 110, 0.2)'
-            }}
-          >
-            <div style={{ marginBottom: '1.5rem' }}>
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <Camera size={64} strokeWidth={1} />
-              </motion.div>
-            </div>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', fontWeight: 800 }}>Use Camera</h2>
-            <p style={{ marginBottom: '2rem', opacity: 0.8, maxWidth: '280px', margin: '0 auto 2rem', fontSize: '0.85rem' }}>Point your camera at a barcode to decode ingredients instantly.</p>
-            <button 
-              className="btn" 
-              style={{ background: 'white', color: 'var(--primary)', boxShadow: '0 10px 20px rgba(0,0,0,0.1)', width: 'auto', padding: '0.8rem 2rem', margin: '0 auto' }} 
-              onClick={() => setShowScanner(true)}
+        <motion.div 
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="card glass"
+          style={{ 
+            textAlign: 'center', 
+            padding: '4rem 1.5rem', 
+            background: 'linear-gradient(135deg, var(--primary) 0%, #064e3b 100%)',
+            color: 'white',
+            border: 'none',
+            boxShadow: '0 20px 40px rgba(15, 118, 110, 0.2)'
+          }}
+        >
+          <div style={{ marginBottom: '2rem' }}>
+            <motion.div
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             >
-              Open Scanner
-            </button>
-          </motion.div>
-        </div>
+              <Camera size={72} strokeWidth={1} />
+            </motion.div>
+          </div>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', fontWeight: 800 }}>Ready to Scan?</h2>
+          <p style={{ marginBottom: '2.5rem', opacity: 0.8, maxWidth: '280px', margin: '0 auto 2.5rem' }}>Point your camera at a barcode to decode ingredients instantly.</p>
+          <button 
+            className="btn" 
+            style={{ background: 'white', color: 'var(--primary)', boxShadow: '0 10px 20px rgba(0,0,0,0.1)', width: 'auto', padding: '1rem 2.5rem', margin: '0 auto' }} 
+            onClick={() => setShowScanner(true)}
+          >
+            Open Scanner
+          </button>
+        </motion.div>
       )}
 
       {loading && (
