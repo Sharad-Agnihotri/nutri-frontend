@@ -15,7 +15,8 @@ export default function GlobalAlert() {
       const unsubscribe = onSnapshot(q, (snapshot) => {
         if (!snapshot.empty) {
           const data = snapshot.docs[0].data();
-          const isRecent = data.timestamp && (Date.now() - data.timestamp.toMillis() < 30000);
+          const hasTimestamp = data.timestamp && typeof data.timestamp.toMillis === 'function';
+          const isRecent = hasTimestamp && (Date.now() - data.timestamp.toMillis() < 30000);
           if (isRecent) {
             setScan(data);
             setTimeout(() => setScan(null), 6000);
