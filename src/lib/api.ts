@@ -1,24 +1,23 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-export async function getProductByBarcode(barcode: string) {
+export async function getProductByBarcode(barcode: string, profile: any = {}) {
   try {
-    const response = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
+    // Call our backend which handles scoring and Open Food Facts data
+    const response = await fetch(`${API_BASE_URL}/product/${barcode}?profile=${encodeURIComponent(JSON.stringify(profile))}`);
     const data = await response.json();
     
-    if (data.status === 0) return null;
+    if (response.status === 404) return null;
 
     return {
-      name: data.product.product_name || 'Unknown Product',
-      brand: data.product.brands || 'Unknown Brand',
-      ingredients: data.product.ingredients_text || '',
-      image: data.product.image_front_url,
-      nutrition: data.product.nutriments,
-      categories: data.product.categories_tags || [],
-      allergens: data.product.allergens_tags || [],
-      quantity: data.product.quantity
+      name: data.product_name,
+      brand: data.brand,
+      ingredients: data.ingredients,
+      image: data.image,
+      nutrition: data.nutriments,
+      analysis: data.analysis
     };
   } catch (error) {
-    console.error('Error fetching product:', error);
+    console.error('Error fetching product from backend:', error);
     return null;
   }
 }

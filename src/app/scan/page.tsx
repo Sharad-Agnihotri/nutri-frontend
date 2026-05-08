@@ -49,7 +49,7 @@ export default function ScanPage() {
     setProduct(null);
     setInsight(null);
     
-    const productData = await getProductByBarcode(barcode);
+    const productData = await getProductByBarcode(barcode, preferences);
     if (productData) {
       setProduct(productData);
       const healthInsight = await generateHealthInsight(productData, preferences);
