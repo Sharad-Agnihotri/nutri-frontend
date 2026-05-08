@@ -11,19 +11,24 @@ export type ScannedProduct = {
 };
 
 export type UserPreferences = {
+  username: string;
   age: number;
-  weight: number;
-  height: number;
-  gender: 'male' | 'female' | 'other';
+  weight?: number;
+  height?: number;
+  gender?: 'male' | 'female' | 'other';
   allergies: string[];
   conditions: string[];
   dietType: 'vegetarian' | 'non-veg' | 'vegan';
-  routine: string;
+  routine?: string;
   dailyBudget: number;
+  proteinGoal?: number;
+  city?: string;
+  state?: string;
+  country?: string;
+  consumedKcalToday?: number;
   scanHistory: ScannedProduct[];
   maintenanceCalories?: number;
   deficitCalories?: number;
-  proteinGoal?: number;
 };
 
 type UserContextType = {

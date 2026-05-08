@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Camera, History, Utensils, MessageSquare, Newspaper } from 'lucide-react';
+import { TrendingUp, Camera, Play, Calendar, MessageSquare } from 'lucide-react';
 import { useUser } from '@/lib/user-context';
 
 export default function Navbar() {
@@ -12,12 +12,11 @@ export default function Navbar() {
   if (!isLoggedIn) return null;
 
   const items = [
-    { name: 'Home', icon: LayoutDashboard, path: '/' },
-    { name: 'Scanner', icon: Camera, path: '/scan' },
-    { name: 'News', icon: Newspaper, path: '/news' },
-    { name: 'History', icon: History, path: '/history' },
-    { name: 'Diet', icon: Utensils, path: '/diet-plan' },
-    { name: 'Chat', icon: MessageSquare, path: '/chat' },
+    { name: 'Dash', icon: TrendingUp, path: '/' },
+    { name: 'Scan', icon: Camera, path: '/scan' },
+    { name: 'Feed', icon: Play, path: '/reels' },
+    { name: 'Diet', icon: Calendar, path: '/diet-plan' },
+    { name: 'People', icon: MessageSquare, path: '/community' },
   ];
 
   return (

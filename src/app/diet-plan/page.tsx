@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@/lib/user-context';
 import { generateDietPlan } from '@/lib/api';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/lib/theme-context';
-import { Calendar, Flame, Target, ChevronRight, Clock, Camera, Search, MessageSquare, Sun, Moon, RefreshCcw, Settings, IndianRupee } from 'lucide-react';
+import { Calendar, Flame, Target, ChevronRight, Clock, Camera, Search, MessageSquare, Sun, Moon, RefreshCcw, Settings, IndianRupee, CloudSun, Thermometer, Play } from 'lucide-react';
+import { getCityWeather } from '@/lib/weather';
 
 export default function DietPlanPage() {
   const { preferences, setPreferences } = useUser();
@@ -17,10 +18,18 @@ export default function DietPlanPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [tempBudget, setTempBudget] = useState(preferences?.dailyBudget || 500);
   const [tempProtein, setTempProtein] = useState(preferences?.proteinGoal || 0);
+  const [weather, setWeather] = useState<any>(null);
   const router = useRouter();
 
   const fetchPlan = async (prefs: any) => {
     setLoading(true);
+    
+    // Fetch weather if city exists
+    if (prefs.city) {
+      const weatherData = await getCityWeather(prefs.city, prefs.state, prefs.country);
+      setWeather(weatherData);
+    }
+
     const data = await generateDietPlan(prefs);
     setPlan(data);
     setLoading(false);
@@ -207,6 +216,35 @@ export default function DietPlanPage() {
           <div style={{ fontSize: '0.65rem', color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase' }}>Protein</div>
         </div>
       </div>
+      {/* Weather Insights */}
+      {weather && (
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          style={{ 
+            background: 'linear-gradient(90deg, #0ea5e9 0%, #38bdf8 100%)', 
+            padding: '1rem', 
+            borderRadius: '1.25rem', 
+            color: 'white',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: '0 8px 20px rgba(14, 165, 233, 0.2)'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <CloudSun size={24} />
+            <div>
+              <p style={{ fontSize: '0.8rem', fontWeight: 700, margin: 0 }}>Weather Wisdom in {preferences?.city}</p>
+              <p style={{ fontSize: '0.75rem', opacity: 0.9, margin: 0 }}>
+                {weather.temp > 30 ? "It's hot! Focus on hydrating foods like cucumber & watermelon." : "Perfect weather for balanced meals."}
+              </p>
+            </div>
+          </div>
+          <div style={{ fontSize: '1.25rem', fontWeight: 800 }}>{weather.temp}°C</div>
+        </motion.div>
+      )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Daily Menu</h3>
@@ -266,17 +304,25 @@ export default function DietPlanPage() {
       </div>
 
       <nav className="nav">
+        <Link href="/" className="nav-item">
+          <TrendingUp size={24} />
+          <span>Dash</span>
+        </Link>
         <Link href="/scan" className="nav-item">
           <Camera size={24} />
           <span>Scan</span>
+        </Link>
+        <Link href="/reels" className="nav-item">
+          <Play size={24} />
+          <span>Reels</span>
         </Link>
         <Link href="/diet-plan" className="nav-item active">
           <Calendar size={24} />
           <span>Diet</span>
         </Link>
-        <Link href="/chat" className="nav-item">
+        <Link href="/community" className="nav-item">
           <MessageSquare size={24} />
-          <span>AI Chat</span>
+          <span>People</span>
         </Link>
       </nav>
     </div>

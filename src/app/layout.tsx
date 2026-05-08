@@ -19,6 +19,7 @@ export const viewport = {
 };
 
 import { ThemeProvider } from "@/lib/theme-context";
+import GlobalAlert from "@/components/GlobalAlert";
 
 export default function RootLayout({
   children,
@@ -30,6 +31,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <UserProvider>
+            <GlobalAlert />
             <main style={{ paddingBottom: '80px' }}>
               {children}
             </main>

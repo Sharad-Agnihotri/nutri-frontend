@@ -1,4 +1,5 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NutriScan AI - Personalized Nutrition Assistant
+<!-- Updated with health-aware scanning, theme toggle, and dynamic diet plans -->
 
 ## Getting Started
 

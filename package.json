@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "latest",
+    "firebase": "^12.13.0",
     "framer-motion": "latest",
     "html5-qrcode": "latest",
     "lucide-react": "latest",

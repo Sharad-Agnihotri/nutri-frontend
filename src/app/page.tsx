@@ -20,7 +20,8 @@ import {
   LogOut,
   ChevronRight,
   Flame,
-  Utensils
+  Utensils,
+  Play
 } from 'lucide-react';
 import Link from 'next/link';
 import { calculateCalories, getMacroBreakdown } from '@/lib/utils';
@@ -34,13 +35,22 @@ export default function Home() {
   const [isLoginView, setIsLoginView] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [signupUsername, setSignupUsername] = useState('');
   const router = useRouter();
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isLoginView && !signupUsername.trim()) {
+      alert('Please enter a username');
+      return;
+    }
+    // Store username temporarily for onboarding to pick up
+    if (!isLoginView && signupUsername.trim()) {
+      localStorage.setItem('nutriai_signup_username', signupUsername.trim());
+    }
     login();
     // If they have no preferences yet, send them to onboarding
-    if (!preferences || !preferences.weight) {
+    if (!preferences || !preferences.username) {
       router.push('/onboarding');
     }
   };
@@ -99,6 +109,21 @@ export default function Home() {
           </div>
 
           <form onSubmit={handleLoginSubmit}>
+            {!isLoginView && (
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ fontSize: '0.875rem', fontWeight: 600, marginLeft: '0.5rem', marginBottom: '0.5rem', display: 'block' }}>Username</label>
+                <input 
+                  type="text" 
+                  placeholder="e.g. sharad_01" 
+                  className="input" 
+                  value={signupUsername}
+                  onChange={(e) => setSignupUsername(e.target.value)}
+                  required
+                  autoComplete="username"
+                  style={{ marginBottom: 0 }}
+                />
+              </div>
+            )}
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ fontSize: '0.875rem', fontWeight: 600, marginLeft: '0.5rem', marginBottom: '0.5rem', display: 'block' }}>Email</label>
               <input 
@@ -164,13 +189,13 @@ export default function Home() {
   }
 
   // Logged In Dashboard Calculation
-  const calorieInfo = preferences ? calculateCalories(
+  const calorieInfo = (preferences?.weight && preferences?.height && preferences?.gender) ? calculateCalories(
     preferences.weight,
     preferences.height,
     preferences.age,
     preferences.gender,
-    preferences.routine
-  ) : { maintenance: 2000, leanCut: 1500 };
+    preferences.routine || 'Lightly Active'
+  ) : { maintenance: 2000, leanCut: 1500, bulk: 2500 };
 
   const macros = getMacroBreakdown(calorieInfo.maintenance, preferences?.weight || 70);
 
@@ -178,7 +203,7 @@ export default function Home() {
     <div className="container">
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', marginTop: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Hi, Friend! 👋</h2>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Hi, {preferences?.username || 'Friend'}! 👋</h2>
           <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>Ready for a healthy day?</p>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -206,18 +231,30 @@ export default function Home() {
               <p style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Consumed vs. Goal</p>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)' }}>0</span>
+              <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)' }}>{preferences?.consumedKcalToday || 0}</span>
               <span style={{ fontSize: '0.9rem', color: 'var(--muted)' }}> / {calorieInfo.maintenance} kcal</span>
             </div>
           </div>
           
-          <div style={{ height: '12px', background: 'var(--secondary)', borderRadius: '6px', overflow: 'hidden' }}>
+          <div style={{ height: '12px', background: 'var(--secondary)', borderRadius: '6px', overflow: 'hidden', marginBottom: '1rem' }}>
             <motion.div 
               initial={{ width: 0 }}
-              animate={{ width: '5%' }} // Demo: Start with small value
+              animate={{ width: `${Math.min(((preferences?.consumedKcalToday || 0) / calorieInfo.maintenance) * 100, 100)}%` }}
               transition={{ duration: 1.2, ease: "easeOut" }}
               style={{ height: '100%', background: 'linear-gradient(90deg, var(--primary) 0%, #5eead4 100%)' }}
             />
+          </div>
+
+          <div style={{ background: 'var(--secondary)', padding: '1rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ background: 'white', padding: '0.5rem', borderRadius: '0.75rem', color: 'var(--accent)' }}>
+              <Zap size={20} />
+            </div>
+            <div>
+              <p style={{ fontSize: '0.8rem', fontWeight: 700, margin: 0 }}>Walking Required</p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--muted)', margin: 0 }}>
+                Walk <strong>{(((preferences?.consumedKcalToday || 0) * 18) / 1000).toFixed(1)} km</strong> to burn today's intake.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -385,24 +422,6 @@ export default function Home() {
         </div>
       </section>
       
-      <nav className="nav">
-        <Link href="/" className="nav-item active">
-          <TrendingUp size={24} />
-          <span>Dash</span>
-        </Link>
-        <Link href="/scan" className="nav-item">
-          <Camera size={24} />
-          <span>Scan</span>
-        </Link>
-        <Link href="/diet-plan" className="nav-item">
-          <Calendar size={24} />
-          <span>Diet</span>
-        </Link>
-        <Link href="/chat" className="nav-item">
-          <MessageSquare size={24} />
-          <span>AI Chat</span>
-        </Link>
-      </nav>
     </div>
   );
 }

@@ -5,11 +5,13 @@ import { useUser } from '@/lib/user-context';
 import { getProductByBarcode, generateHealthInsight } from '@/lib/api';
 import Scanner from '@/components/Scanner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Search, AlertTriangle, CheckCircle2, Info, ChevronRight, Utensils, Activity } from 'lucide-react';
+import { Camera, Search, AlertTriangle, CheckCircle2, Info, ChevronRight, Utensils, Activity, TrendingUp, Play, MessageSquare, Calendar } from 'lucide-react';
 import Link from 'next/link';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function ScanPage() {
-  const { preferences, addToHistory } = useUser();
+  const { preferences, addToHistory, setPreferences } = useUser();
   const [showScanner, setShowScanner] = useState(false);
   const [loading, setLoading] = useState(false);
   const [product, setProduct] = useState<any>(null);
@@ -61,6 +63,19 @@ export default function ScanPage() {
         timestamp: Date.now(),
         isSafe: healthInsight.isSafe
       });
+
+      // PUSH TO PUBLIC FEED (REAL-TIME)
+      if (preferences?.conditions?.length) {
+        try {
+          await addDoc(collection(db, 'public_scans'), {
+            product: productData.name,
+            condition: preferences.conditions[0],
+            timestamp: serverTimestamp()
+          });
+        } catch (e) {
+          console.error("Firebase push failed", e);
+        }
+      }
     } else {
       setError('Product not found. Please try another barcode.');
     }
@@ -296,13 +311,29 @@ export default function ScanPage() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-            <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => { setProduct(null); setInsight(null); setShowScanner(true); }}>
-              <Camera size={20} /> New Scan
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
+            <button 
+              className="btn btn-primary" 
+              style={{ flex: 1, background: '#16a34a', borderColor: '#16a34a' }} 
+              onClick={() => {
+                const kcal = product.nutrition['energy-kcal_100g'] || 0;
+                setPreferences({
+                  ...preferences!,
+                  consumedKcalToday: (preferences?.consumedKcalToday || 0) + kcal
+                });
+                alert(`Added ${kcal} kcal to your daily intake. You should walk about ${((kcal * 18) / 1000).toFixed(1)}km to burn this.`);
+              }}
+            >
+              <CheckCircle2 size={20} /> I Consumed This
             </button>
-            <button className="btn btn-secondary" style={{ width: 'auto' }} onClick={() => { setProduct(null); setInsight(null); }}>
-              Back
-            </button>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => { setProduct(null); setInsight(null); setShowScanner(true); }}>
+                <Camera size={20} /> New Scan
+              </button>
+              <button className="btn btn-secondary" style={{ width: 'auto' }} onClick={() => { setProduct(null); setInsight(null); }}>
+                Back
+              </button>
+            </div>
           </div>
         </motion.div>
       )}

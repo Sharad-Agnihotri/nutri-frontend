@@ -2,15 +2,18 @@ export function calculateCalories(
   weight: number,
   height: number,
   age: number,
-  gender: 'male' | 'female',
+  gender: 'male' | 'female' | 'other',
   routine: string
 ) {
   // Mifflin-St Jeor Equation
   let bmr = (10 * weight) + (6.25 * height) - (5 * age);
   if (gender === 'male') {
     bmr += 5;
-  } else {
+  } else if (gender === 'female') {
     bmr -= 161;
+  } else {
+    // Default for 'other' or unspecified - neutral adjustment
+    bmr -= 78; 
   }
 
   // Activity Multipliers
