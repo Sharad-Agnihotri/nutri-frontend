@@ -1,4 +1,9 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const getApiBaseUrl = () => {
+  const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  return url.endsWith('/api') ? url : `${url}/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export async function getProductByBarcode(barcode: string, profile: any = {}) {
   try {
