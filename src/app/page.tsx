@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useUser } from '@/lib/user-context';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -23,9 +23,14 @@ import {
   Utensils
 } from 'lucide-react';
 import Link from 'next/link';
+import { calculateCalories, getMacroBreakdown } from '@/lib/utils';
+
+import { useTheme } from '@/lib/theme-context';
+import { Sun, Moon } from 'lucide-react';
 
 export default function Home() {
   const { isLoggedIn, preferences, login, logout } = useUser();
+  const { theme, toggleTheme } = useTheme();
   const [isLoginView, setIsLoginView] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,7 +40,7 @@ export default function Home() {
     e.preventDefault();
     login();
     // If they have no preferences yet, send them to onboarding
-    if (!preferences) {
+    if (!preferences || !preferences.weight) {
       router.push('/onboarding');
     }
   };
@@ -43,7 +48,13 @@ export default function Home() {
   if (!isLoggedIn) {
     return (
       <div className="container">
-        <header style={{ marginTop: '2rem', marginBottom: '3rem', textAlign: 'center' }}>
+        <header style={{ marginTop: '2rem', marginBottom: '3rem', textAlign: 'center', position: 'relative' }}>
+          <button 
+            onClick={toggleTheme}
+            style={{ position: 'absolute', right: 0, top: 0, background: 'var(--secondary)', border: 'none', padding: '0.75rem', borderRadius: '1rem', color: 'var(--muted)' }}
+          >
+            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+          </button>
           <motion.div 
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -152,7 +163,17 @@ export default function Home() {
     );
   }
 
-  // Logged In Dashboard
+  // Logged In Dashboard Calculation
+  const calorieInfo = preferences ? calculateCalories(
+    preferences.weight,
+    preferences.height,
+    preferences.age,
+    preferences.gender,
+    preferences.routine
+  ) : { maintenance: 2000, leanCut: 1500 };
+
+  const macros = getMacroBreakdown(calorieInfo.maintenance, preferences?.weight || 70);
+
   return (
     <div className="container">
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', marginTop: '1rem' }}>
@@ -160,12 +181,20 @@ export default function Home() {
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>Hi, Friend! 👋</h2>
           <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>Ready for a healthy day?</p>
         </div>
-        <button 
-          onClick={logout}
-          style={{ background: 'var(--secondary)', border: 'none', padding: '0.75rem', borderRadius: '1rem', color: 'var(--muted)' }}
-        >
-          <LogOut size={20} />
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button 
+            onClick={toggleTheme}
+            style={{ background: 'var(--secondary)', border: 'none', padding: '0.75rem', borderRadius: '1rem', color: 'var(--muted)' }}
+          >
+            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+          </button>
+          <button 
+            onClick={logout}
+            style={{ background: 'var(--secondary)', border: 'none', padding: '0.75rem', borderRadius: '1rem', color: 'var(--muted)' }}
+          >
+            <LogOut size={20} />
+          </button>
+        </div>
       </header>
 
       {/* Daily Nutrition Overview */}
@@ -177,15 +206,15 @@ export default function Home() {
               <p style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Consumed vs. Goal</p>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)' }}>1,420</span>
-              <span style={{ fontSize: '0.9rem', color: 'var(--muted)' }}> / 2,100 kcal</span>
+              <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)' }}>0</span>
+              <span style={{ fontSize: '0.9rem', color: 'var(--muted)' }}> / {calorieInfo.maintenance} kcal</span>
             </div>
           </div>
           
           <div style={{ height: '12px', background: 'var(--secondary)', borderRadius: '6px', overflow: 'hidden' }}>
             <motion.div 
               initial={{ width: 0 }}
-              animate={{ width: '67%' }}
+              animate={{ width: '5%' }} // Demo: Start with small value
               transition={{ duration: 1.2, ease: "easeOut" }}
               style={{ height: '100%', background: 'linear-gradient(90deg, var(--primary) 0%, #5eead4 100%)' }}
             />
@@ -197,10 +226,10 @@ export default function Home() {
       <section style={{ marginBottom: '2rem' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
           {[
-            { label: 'Calories', value: '1.4k', target: '2.1k', color: '#2dd4bf', percent: 67 },
-            { label: 'Protein', value: '85g', target: '120g', color: '#60a5fa', percent: 70 },
-            { label: 'Carbs', value: '140g', target: '250g', color: '#fbbf24', percent: 56 },
-            { label: 'Fat', value: '45g', target: '70g', color: '#f87171', percent: 64 },
+            { label: 'Calories', value: calorieInfo.maintenance, target: calorieInfo.maintenance, color: '#2dd4bf', percent: 0 },
+            { label: 'Protein', value: macros.protein + 'g', target: macros.protein + 'g', color: '#60a5fa', percent: 0 },
+            { label: 'Carbs', value: macros.carbs + 'g', target: macros.carbs + 'g', color: '#fbbf24', percent: 0 },
+            { label: 'Fat', value: macros.fat + 'g', target: macros.fat + 'g', color: '#f87171', percent: 0 },
           ].map((macro, idx) => (
             <div key={idx} className="card" style={{ padding: '1rem 0.5rem', marginBottom: 0, textAlign: 'center', background: 'var(--card)' }}>
               <div style={{ position: 'relative', width: '50px', height: '50px', margin: '0 auto 0.75rem' }}>
@@ -213,13 +242,13 @@ export default function Home() {
                     strokeWidth="4" 
                     strokeDasharray="138.2"
                     initial={{ strokeDashoffset: 138.2 }}
-                    animate={{ strokeDashoffset: 138.2 - (138.2 * macro.percent) / 100 }}
+                    animate={{ strokeDashoffset: 138.2 - (138.2 * 10) / 100 }} // Demo: 10% progress
                     transition={{ duration: 1.5, delay: idx * 0.1 }}
                     strokeLinecap="round"
                   />
                 </svg>
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700 }}>
-                  {macro.percent}%
+                  0%
                 </div>
               </div>
               <h5 style={{ fontSize: '0.75rem', marginBottom: '0.25rem' }}>{macro.label}</h5>
@@ -234,7 +263,7 @@ export default function Home() {
         <div className="card" style={{ flex: 1.2, marginBottom: 0, padding: '1.25rem', background: 'rgba(56, 189, 248, 0.05)', borderColor: 'rgba(56, 189, 248, 0.2)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <h4 style={{ fontSize: '0.9rem', fontWeight: 700 }}>Hydration</h4>
-            <span style={{ fontSize: '0.75rem', color: '#0ea5e9', fontWeight: 700 }}>1.8L / 2.5L</span>
+            <span style={{ fontSize: '0.75rem', color: '#0ea5e9', fontWeight: 700 }}>0L / 2.5L</span>
           </div>
           <div style={{ display: 'flex', gap: '0.4rem' }}>
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
@@ -242,12 +271,12 @@ export default function Home() {
                 flex: 1, 
                 height: '24px', 
                 borderRadius: '4px', 
-                background: i <= 5 ? '#38bdf8' : 'rgba(56, 189, 248, 0.1)',
+                background: 'rgba(56, 189, 248, 0.1)',
                 transition: 'all 0.3s ease'
               }} />
             ))}
           </div>
-          <p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.75rem', textAlign: 'center' }}>5 of 8 glasses reached</p>
+          <p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.75rem', textAlign: 'center' }}>Track your water intake</p>
         </div>
 
         <Link href="/scan" style={{ flex: 1, textDecoration: 'none' }}>
@@ -312,67 +341,6 @@ export default function Home() {
         </Link>
       </section>
 
-      {/* Storytelling / About Section */}
-      <section style={{ marginBottom: '2.5rem' }}>
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="card glass" 
-          style={{ 
-            padding: '2rem', 
-            border: 'none', 
-            background: 'linear-gradient(135deg, rgba(45, 212, 191, 0.05) 0%, rgba(249, 115, 22, 0.05) 100%)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}
-        >
-          {/* Decorative elements */}
-          <div style={{ position: 'absolute', top: '-20px', right: '-20px', opacity: 0.1 }}>
-            <Leaf size={120} color="var(--primary)" />
-          </div>
-
-          <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '1.5rem', lineHeight: 1.2 }}>
-            Beyond the Barcode: <br />
-            <span style={{ color: 'var(--primary)' }}>Your Health Story</span>
-          </h3>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', color: 'var(--foreground)', opacity: 0.9, lineHeight: 1.6 }}>
-            <p>
-              We believe that food should be your **fuel**, not a mystery. NutriScan AI was born from a simple mission: to empower you with the truth behind every label.
-            </p>
-            
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-              <div style={{ background: 'var(--primary)', color: 'white', padding: '0.5rem', borderRadius: '0.75rem', flexShrink: 0 }}>
-                <Search size={20} />
-              </div>
-              <p style={{ fontSize: '0.9rem' }}>
-                <strong>Total Transparency:</strong> We use advanced AI to decode complex ingredients, giving you instant clarity on what fits your unique dietary needs.
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-              <div style={{ background: 'var(--accent)', color: 'white', padding: '0.5rem', borderRadius: '0.75rem', flexShrink: 0 }}>
-                <Zap size={20} />
-              </div>
-              <p style={{ fontSize: '0.9rem' }}>
-                <strong>Personalized Growth:</strong> Your journey is yours alone. Our AI learns your preferences to guide you toward a healthier version of yourself, one scan at a time.
-              </p>
-            </div>
-
-            <p style={{ fontStyle: 'italic', borderLeft: '3px solid var(--primary)', paddingLeft: '1rem', marginTop: '0.5rem' }}>
-              "Our goal isn't just to count calories—it's to make every calorie count."
-            </p>
-          </div>
-
-          <Link href="/scan" style={{ textDecoration: 'none' }}>
-            <button className="btn btn-primary" style={{ marginTop: '2rem' }}>
-              Start Your Journey
-              <ArrowRight size={20} />
-            </button>
-          </Link>
-        </motion.div>
-      </section>
-
       {/* Recent History */}
       {preferences?.scanHistory && preferences.scanHistory.length > 0 && (
         <section style={{ marginBottom: '2rem' }}>
@@ -416,6 +384,25 @@ export default function Home() {
           </div>
         </div>
       </section>
+      
+      <nav className="nav">
+        <Link href="/" className="nav-item active">
+          <TrendingUp size={24} />
+          <span>Dash</span>
+        </Link>
+        <Link href="/scan" className="nav-item">
+          <Camera size={24} />
+          <span>Scan</span>
+        </Link>
+        <Link href="/diet-plan" className="nav-item">
+          <Calendar size={24} />
+          <span>Diet</span>
+        </Link>
+        <Link href="/chat" className="nav-item">
+          <MessageSquare size={24} />
+          <span>AI Chat</span>
+        </Link>
+      </nav>
     </div>
   );
 }

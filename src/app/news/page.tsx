@@ -115,7 +115,7 @@ export default function NewsPage() {
           </div>
 
           {/* News List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {news.map((item, idx) => (
               <motion.a 
                 href={item.url}
@@ -126,26 +126,52 @@ export default function NewsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
                 className="card glass" 
-                style={{ padding: '0.75rem', display: 'flex', gap: '1rem', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}
+                style={{ 
+                  padding: '0.75rem', 
+                  display: 'flex', 
+                  gap: '0.75rem', 
+                  alignItems: 'center', 
+                  textDecoration: 'none', 
+                  color: 'inherit',
+                  marginBottom: 0 // overriding card margin
+                }}
               >
-                <img 
-                  src={item.image} 
-                  style={{ width: '80px', height: '80px', borderRadius: '0.75rem', objectFit: 'cover' }} 
-                  alt={item.title}
-                />
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                    <span style={{ fontSize: '0.65rem', color: 'var(--primary)', fontWeight: 800 }}>{activeCategory === 'All' ? 'HEALTH' : activeCategory.toUpperCase()}</span>
-                    <span style={{ fontSize: '0.65rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <div style={{ flexShrink: 0 }}>
+                  <img 
+                    src={item.image} 
+                    style={{ width: '70px', height: '70px', borderRadius: '0.75rem', objectFit: 'cover' }} 
+                    alt={item.title}
+                  />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}> {/* minWidth: 0 fixes text truncation in flexbox */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.6rem', color: 'var(--primary)', fontWeight: 800, whiteSpace: 'nowrap' }}>
+                      {activeCategory === 'All' ? 'HEALTH' : activeCategory.toUpperCase()}
+                    </span>
+                    <span style={{ fontSize: '0.6rem', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '0.2rem', whiteSpace: 'nowrap' }}>
                       <Clock size={10} /> {item.time}
                     </span>
                   </div>
-                  <h4 style={{ fontSize: '0.9rem', fontWeight: 700, lineHeight: 1.3, marginBottom: '0.5rem' }}>{item.title}</h4>
+                  <h4 style={{ 
+                    fontSize: '0.85rem', 
+                    fontWeight: 700, 
+                    lineHeight: 1.3, 
+                    marginBottom: '0.5rem',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical'
+                  }}>
+                    {item.title}
+                  </h4>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{item.source}</span>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <Bookmark size={14} color="var(--muted)" />
-                      <ExternalLink size={14} color="var(--muted)" />
+                    <span style={{ fontSize: '0.65rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>
+                      {item.source}
+                    </span>
+                    <div style={{ display: 'flex', gap: '0.4rem' }}>
+                      <Bookmark size={12} color="var(--muted)" />
+                      <ExternalLink size={12} color="var(--muted)" />
                     </div>
                   </div>
                 </div>

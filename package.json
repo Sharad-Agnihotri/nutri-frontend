@@ -8,13 +8,14 @@
     "start": "next start"
   },
   "dependencies": {
+    "@google/generative-ai": "latest",
+    "framer-motion": "latest",
+    "html5-qrcode": "latest",
+    "lucide-react": "latest",
     "next": "^15.1.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "html5-qrcode": "latest",
-    "lucide-react": "latest",
-    "framer-motion": "latest",
-    "@google/generative-ai": "latest"
+    "react-markdown": "^10.1.0"
   },
   "devDependencies": {
     "@types/node": "^20",

@@ -198,6 +198,34 @@ export default function ScanPage() {
             </div>
           </div>
 
+          {/* Best Replacement Section (When Unsafe) */}
+          {insight.bestReplacement && !insight.isSafe && (
+            <motion.div 
+              initial={{ y: 10, opacity: 0 }} 
+              animate={{ y: 0, opacity: 1 }} 
+              transition={{ delay: 0.1 }} 
+              className="card" 
+              style={{ 
+                background: 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)', 
+                color: 'white',
+                border: 'none', 
+                padding: '1.5rem',
+                boxShadow: '0 10px 30px rgba(15, 118, 110, 0.3)'
+              }}
+            >
+              <h4 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <CheckCircle2 size={20} /> Best Replacement
+              </h4>
+              <div style={{ background: 'rgba(255, 255, 255, 0.1)', padding: '1rem', borderRadius: '1rem', marginBottom: '1rem' }}>
+                <p style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.25rem' }}>{insight.bestReplacement.name}</p>
+                <p style={{ fontSize: '0.85rem', opacity: 0.9 }}>{insight.bestReplacement.reason}</p>
+              </div>
+              <p style={{ fontSize: '0.75rem', opacity: 0.8, textAlign: 'center' }}>
+                Calculated based on your ₹{preferences?.dailyBudget} budget & health conditions.
+              </p>
+            </motion.div>
+          )}
+
           {/* NEW: Reality Check Section */}
           {insight.realityCheck && (
             <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="card" style={{ padding: '1.5rem' }}>
@@ -219,8 +247,8 @@ export default function ScanPage() {
             </motion.div>
           )}
 
-          {/* NEW: Smart Swap Section */}
-          {insight.smartSwap && (
+          {/* Smart Swap Section (When Safe but could be better) */}
+          {insight.smartSwap && insight.isSafe && (
             <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }} className="card" style={{ background: 'rgba(45, 212, 191, 0.05)', borderColor: 'var(--primary)', padding: '1.5rem' }}>
               <h4 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary)' }}>
                 <CheckCircle2 size={18} /> Smart Swap

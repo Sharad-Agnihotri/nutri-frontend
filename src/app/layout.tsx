@@ -18,6 +18,8 @@ export const viewport = {
   userScalable: 0,
 };
 
+import { ThemeProvider } from "@/lib/theme-context";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,12 +28,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <UserProvider>
-          <main style={{ paddingBottom: '80px' }}>
-            {children}
-          </main>
-          <Navbar />
-        </UserProvider>
+        <ThemeProvider>
+          <UserProvider>
+            <main style={{ paddingBottom: '80px' }}>
+              {children}
+            </main>
+            <Navbar />
+          </UserProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

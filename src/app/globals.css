@@ -17,7 +17,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --background: #000000;
     --foreground: #f9fafb;
     --primary: #2dd4bf;
@@ -33,6 +33,41 @@
     --glass: rgba(10, 10, 10, 0.7);
     --glass-border: rgba(255, 255, 255, 0.1);
   }
+}
+
+:root.dark {
+  --background: #000000;
+  --foreground: #f9fafb;
+  --primary: #2dd4bf;
+  --primary-foreground: #000000;
+  --secondary: #111827;
+  --secondary-foreground: #f9fafb;
+  --accent: #fb923c;
+  --accent-foreground: #000000;
+  --muted: #94a3b8;
+  --border: rgba(255, 255, 255, 0.1);
+  --card: #0a0a0a;
+  --card-foreground: #f9fafb;
+  --glass: rgba(10, 10, 10, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+:root.light {
+  --background: #ffffff;
+  --foreground: #111827;
+  --primary: #0f766e;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f4f6;
+  --secondary-foreground: #111827;
+  --accent: #f97316;
+  --accent-foreground: #ffffff;
+  --muted: #64748b;
+  --border: rgba(0, 0, 0, 0.08);
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --radius: 1.25rem;
+  --glass: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
 }
 
 * {
@@ -229,5 +264,27 @@ body {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+.markdown-chat ul, .markdown-chat ol {
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+}
+
+.markdown-chat li {
+  margin-bottom: 0.25rem;
+}
+
+.markdown-chat p {
+  margin-bottom: 0.5rem;
+}
+
+.markdown-chat p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-chat strong {
+  color: var(--primary);
+  font-weight: 700;
 }
 

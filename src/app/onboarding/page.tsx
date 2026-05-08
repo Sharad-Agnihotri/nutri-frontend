@@ -16,8 +16,12 @@ export default function Onboarding() {
   const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [dietType, setDietType] = useState<'vegetarian' | 'non-veg' | 'vegan'>('non-veg');
-  const [proteinGoal, setProteinGoal] = useState(60);
-  const [routine, setRoutine] = useState('Sedentary');
+  const [age, setAge] = useState<number>(25);
+  const [weight, setWeight] = useState<number>(70);
+  const [height, setHeight] = useState<number>(170);
+  const [gender, setGender] = useState<'male' | 'female'>('male');
+  const [routine, setRoutine] = useState('Lightly Active (Walking, light exercise)');
+  const [budget, setBudget] = useState<number>(500);
 
   const toggleItem = (item: string, list: string[], setList: (l: string[]) => void) => {
     if (list.includes(item)) {
@@ -29,11 +33,15 @@ export default function Onboarding() {
 
   const handleFinish = () => {
     setPreferences({
+      age,
+      weight,
+      height,
+      gender,
       allergies: selectedAllergies,
       conditions: selectedConditions,
       dietType,
-      proteinGoal,
       routine,
+      dailyBudget: budget,
       scanHistory: []
     });
     router.push('/');
@@ -49,9 +57,9 @@ export default function Onboarding() {
     <div className="container">
       <header style={{ marginBottom: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-          <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>Step {step} of 4</span>
+          <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--primary)' }}>Step {step} of 5</span>
           <div style={{ display: 'flex', gap: '0.25rem' }}>
-            {[1, 2, 3, 4].map(s => (
+            {[1, 2, 3, 4, 5].map(s => (
               <div key={s} style={{ 
                 width: '20px', 
                 height: '4px', 
@@ -71,7 +79,7 @@ export default function Onboarding() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
               {ALLERGIES.map(allergy => (
                 <button 
-                  key={allergy}
+                   key={allergy}
                   className={`btn ${selectedAllergies.includes(allergy) ? 'btn-primary' : 'btn-secondary'}`}
                   style={{ padding: '0.75rem', fontSize: '0.875rem', justifyContent: 'flex-start' }}
                   onClick={() => toggleItem(allergy, selectedAllergies, setSelectedAllergies)}
@@ -125,21 +133,60 @@ export default function Onboarding() {
 
         {step === 4 && (
           <motion.div key="step4" variants={variants} initial="enter" animate="center" exit="exit">
-            <h2 className="title">Goals & Routine</h2>
-            <p className="subtitle">Tell us about your daily activity and protein needs.</p>
+            <h2 className="title">Physical Info</h2>
+            <p className="subtitle">This helps us calculate your daily calorie needs.</p>
             
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Protein Goal ({proteinGoal}g)</label>
-            <input 
-              type="range" 
-              min="20" max="200" step="5" 
-              className="input" 
-              value={proteinGoal} 
-              onChange={(e) => setProteinGoal(Number(e.target.value))}
-              style={{ marginBottom: '1.5rem', padding: 0 }}
-            />
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+              {(['male', 'female'] as const).map(g => (
+                <button 
+                  key={g}
+                  className={`btn ${gender === g ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setGender(g)}
+                  style={{ flex: 1, textTransform: 'capitalize' }}
+                >
+                  {g}
+                </button>
+              ))}
+            </div>
 
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.9rem' }}>Age</label>
+                <input 
+                  type="number" 
+                  className="input" 
+                  value={age} 
+                  onChange={(e) => setAge(Number(e.target.value))}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.9rem' }}>Weight (kg)</label>
+                <input 
+                  type="number" 
+                  className="input" 
+                  value={weight} 
+                  onChange={(e) => setWeight(Number(e.target.value))}
+                />
+              </div>
+            </div>
+
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.9rem' }}>Height (cm)</label>
+            <input 
+              type="number" 
+              className="input" 
+              value={height} 
+              onChange={(e) => setHeight(Number(e.target.value))}
+            />
+          </motion.div>
+        )}
+
+        {step === 5 && (
+          <motion.div key="step5" variants={variants} initial="enter" animate="center" exit="exit">
+            <h2 className="title">Lifestyle</h2>
+            <p className="subtitle">Nearly there! Tell us about your daily activity levels.</p>
+            
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Daily Routine</label>
-            <select className="input" value={routine} onChange={(e) => setRoutine(e.target.value)}>
+            <select className="input" value={routine} onChange={(e) => setRoutine(e.target.value)} style={{ marginBottom: '1.5rem' }}>
               <option>Sedentary (Office work, low movement)</option>
               <option>Lightly Active (Walking, light exercise)</option>
               <option>Moderately Active (Daily exercise)</option>
@@ -150,7 +197,7 @@ export default function Onboarding() {
       </AnimatePresence>
 
       <div style={{ marginTop: 'auto', paddingTop: '2rem' }}>
-        {step < 4 ? (
+        {step < 5 ? (
           <button className="btn btn-primary" onClick={() => setStep(step + 1)}>
             Continue
             <ChevronRight size={20} />
